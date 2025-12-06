@@ -6,14 +6,33 @@ import cors from 'cors';
 const app = express();
 const httpServer = createServer(app);
 
+// ============================================
+// CORS CONFIGURATION
+// ============================================
+
+// Read allowed frontend URLs from environment variable
+// For local development: defaults to localhost
+// For production (Render): set CORS_ORIGIN in environment variables
+// Example: CORS_ORIGIN=https://your-app.vercel.app,https://your-app-preview.vercel.app
+const allowedOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim())
+  : ["http://localhost:5173", "http://localhost:5174"];
+
+console.log("🌍 Allowed CORS Origins:", allowedOrigins);
+
 // Configure CORS for Express
-app.use(cors());
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true,
+  methods: ["GET", "POST", "OPTIONS"]
+}));
 
 // Configure Socket.IO with CORS
 const io = new Server(httpServer, {
   cors: {
-    origin: ["http://localhost:5173", "http://localhost:5174"], // React dev server + multiple tabs
-    methods: ["GET", "POST"]
+    origin: allowedOrigins,
+    methods: ["GET", "POST"],
+    credentials: true
   }
 });
 
